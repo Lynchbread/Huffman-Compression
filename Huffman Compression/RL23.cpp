@@ -47,7 +47,7 @@ char* RL23::compressed_str_to_bin_str(const char* comp_str, const unsigned long 
 	return new_str;
 }
 
-char* RL23::bin_str_to_original_str(char* bin_str) const
+char* RL23::bin_str_to_original_str(char* bin_str, HuffmanTree* tree)
 {
 	const unsigned long long old_size = std::strlen(bin_str);
 	const auto new_str = new char[old_size];
@@ -56,7 +56,7 @@ char* RL23::bin_str_to_original_str(char* bin_str) const
 
 	for (unsigned long long i = 0; i < old_size - 1 && data != -1; i++)
 	{
-		data = tree_->GetData(bin_str);
+		data = tree->GetData(bin_str);
 
 		if (data != -1)
 		{
@@ -68,14 +68,13 @@ char* RL23::bin_str_to_original_str(char* bin_str) const
 	return new_str;
 }
 
-RL23::RL23() { tree_ = nullptr; }
+RL23::RL23() {}
 
-RL23::~RL23() { delete tree_; }
+RL23::~RL23() {}
 
 std::string RL23::compress(const std::string& input_filename, const std::string& output_filename)
 {
-	if (tree_ == nullptr)
-		tree_ = new HuffmanTree(input_filename);
+	HuffmanTree tree(input_filename);
 
 	std::cout << "Beginning compression...\n";
 
@@ -86,7 +85,7 @@ std::string RL23::compress(const std::string& input_filename, const std::string&
 
 	std::ofstream outfile(output_filename, std::ios::binary);
 
-	outfile << *tree_ << '\n';
+	outfile << tree << '\n';
 
 	constexpr unsigned long long read_buffer_size = 4096;
 	constexpr unsigned long long output_buffer_size = 65536;
@@ -102,7 +101,7 @@ std::string RL23::compress(const std::string& input_filename, const std::string&
 
 		for (unsigned long i = 0; i < gcount_size; i++)
 		{
-			auto temp_str = tree_->GetCode(read_buffer[i]);
+			auto temp_str = tree.GetCode(read_buffer[i]);
 
 			if (std::strlen(output_buffer) + temp_str.length() + 1 > output_buffer_size)
 			{
@@ -142,10 +141,9 @@ std::string RL23::decompress(const std::string& input_filename, const std::strin
 	if (!infile.is_open())
 		return "ERROR: Failed to open file '" + input_filename + "'.\n";
 
-	if (tree_ == nullptr)
-		tree_ = new HuffmanTree;
+	HuffmanTree tree;
 
-	infile >> *tree_;
+	infile >> tree;
 
 	std::ofstream outfile(output_filename, std::ios::binary);
 
@@ -184,7 +182,7 @@ std::string RL23::decompress(const std::string& input_filename, const std::strin
 		if (infile.eof() && final_str != nullptr)
 			std::strcat(binary_buffer, final_str);
 
-		const char* original_str = bin_str_to_original_str(binary_buffer);
+		const char* original_str = bin_str_to_original_str(binary_buffer, &tree);
 
 		if (std::strlen(output_buffer) + std::strlen(original_str) + 1 > output_buffer_size)
 		{

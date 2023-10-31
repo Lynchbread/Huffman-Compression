@@ -9,21 +9,19 @@ unsigned long long compare_files(const std::string&, const std::string&);
 
 int main()
 {
-	RL23 obj;
-
-	const std::string uncompressed_filename = "uint_data0.dat";
+	const std::string uncompressed_filename = "uint_data1.dat";
 	const std::string compressed_filename = "compressed_" + uncompressed_filename;
 	const std::string decompressed_filename = "decompressed_" + uncompressed_filename;
 
 	auto start_time = std::chrono::high_resolution_clock::now();
-	std::cout << obj.compress(uncompressed_filename, compressed_filename);
+	std::cout << RL23::compress(uncompressed_filename, compressed_filename);
 	auto stop_time = std::chrono::high_resolution_clock::now();
 	std::cout << "Time Taken: "
 		<< std::chrono::duration_cast<std::chrono::milliseconds>(stop_time - start_time).count()
 		<< " ms\n";
 
 	start_time = std::chrono::high_resolution_clock::now();
-	std::cout << obj.decompress(compressed_filename, decompressed_filename);
+	std::cout << RL23::decompress(compressed_filename, decompressed_filename);
 	stop_time = std::chrono::high_resolution_clock::now();
 	std::cout << "Time Taken: "
 		<< std::chrono::duration_cast<std::chrono::milliseconds>(stop_time - start_time).count()
