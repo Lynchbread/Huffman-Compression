@@ -1,5 +1,6 @@
 #pragma once
 
+#include <fstream>
 #include <string>
 
 #include "HuffmanTree.h"
@@ -13,11 +14,16 @@ class RL23
 
 	HuffmanTree* tree_;
 
+	char* binary_buffer_;
+
 public:
 	RL23();
+	RL23(std::ifstream&);
 	~RL23();
 
 	std::string compress(const std::string&, const std::string&);
 	std::string decompress(const std::string&, const std::string&);
+
+	const char* read_compressed_file(std::ifstream&);
 };
 

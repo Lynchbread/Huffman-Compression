@@ -68,9 +68,19 @@ char* RL23::bin_str_to_original_str(char* bin_str) const
 	return new_str;
 }
 
-RL23::RL23() { tree_ = nullptr; }
+RL23::RL23() : tree_(nullptr), binary_buffer_(nullptr) {}
 
-RL23::~RL23() { delete tree_; }
+RL23::RL23(std::ifstream& infile)
+: tree_(new HuffmanTree), binary_buffer_(nullptr)
+{
+	infile >> *tree_;
+}
+
+RL23::~RL23()
+{
+	delete tree_;
+	delete[] binary_buffer_;
+}
 
 std::string RL23::compress(const std::string& input_filename, const std::string& output_filename)
 {
@@ -207,4 +217,43 @@ std::string RL23::decompress(const std::string& input_filename, const std::strin
 	outfile.close();
 
 	return "Successfully decompressed file '" + input_filename + "'.\n";
+}
+
+const char* RL23::read_compressed_file(std::ifstream& infile)
+{
+	if (tree_ == nullptr || infile.eof())
+		return nullptr;
+
+	constexpr unsigned long long read_buffer_size = 4096;
+
+	const auto read_buffer = new char[read_buffer_size];
+
+	if (binary_buffer_ == nullptr)
+		binary_buffer_ = new char[read_buffer_size * 8 + 9];
+
+	infile.read(read_buffer, read_buffer_size - 1);
+	unsigned long long gcount_size = infile.gcount();
+	read_buffer[gcount_size] = '\0';
+
+	char* leftover_bin = nullptr;
+
+	if (infile.eof())
+	{
+		leftover_bin = read_buffer + gcount_size;
+
+		for (; leftover_bin[0] != '\n'; --leftover_bin, --gcount_size);
+
+		leftover_bin[0] = '\0';
+		leftover_bin++;
+	}
+
+	const auto bin_str = compressed_str_to_bin_str(read_buffer, gcount_size);
+	std::strcat(binary_buffer_, bin_str);
+	delete[] bin_str;
+	delete[] read_buffer;
+
+	if (infile.eof() && leftover_bin != nullptr)
+		std::strcat(binary_buffer_, leftover_bin);
+
+	return bin_str_to_original_str(binary_buffer_);
 }
