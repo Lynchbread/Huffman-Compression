@@ -37,7 +37,8 @@ public:
 	void clear(const Node* = nullptr);
 	char GetData(char*) const;
 	std::string GetCode(char);
-	
+
+	static unsigned long long GetData_duration_;
 
 	friend bool operator<(const Node&, const Node&);
 	friend std::istream& operator>>(std::istream& is, HuffmanTree& tree);

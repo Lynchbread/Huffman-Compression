@@ -2,8 +2,11 @@
 
 #include "HuffmanTree.h"
 
+#include <chrono>
 #include <fstream>
 #include <list>
+
+unsigned long long HuffmanTree::GetData_duration_ = 0;
 
 HuffmanTree::Node::Node(const char c, const unsigned long long f)
 {
@@ -202,6 +205,8 @@ void HuffmanTree::clear(const Node* node)
 
 char HuffmanTree::GetData(char* bin_str) const
 {
+	const auto start_time = std::chrono::high_resolution_clock::now();
+
 	const Node* temp_ptr = head_;
 	const unsigned long long size = std::strlen(bin_str);
 	unsigned long long pos = 0;
@@ -211,6 +216,8 @@ char HuffmanTree::GetData(char* bin_str) const
 
 	if (temp_ptr->data != -1)
 		std::strcpy(bin_str, bin_str + pos);
+
+	GetData_duration_ += std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
 
 	return temp_ptr->data;
 }
