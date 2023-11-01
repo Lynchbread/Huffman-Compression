@@ -10,7 +10,7 @@ unsigned long long compare_files(const std::string&, const std::string&);
 
 int main()
 {
-	const std::string uncompressed_filename = "uint_data0.dat";
+	const std::string uncompressed_filename = "uint_data1.dat";
 	const std::string compressed_filename = "compressed_" + uncompressed_filename;
 	const std::string old_decompressed_filename = "old_decompressed_" + uncompressed_filename;
 	const std::string new_decompressed_filename = "new_decompressed_" + uncompressed_filename;
@@ -18,6 +18,13 @@ int main()
 	auto start_time = std::chrono::high_resolution_clock::now();
 	std::cout << RL23::compress(uncompressed_filename, compressed_filename);
 	auto stop_time = std::chrono::high_resolution_clock::now();
+	std::cout << "Time Taken: "
+		<< std::chrono::duration_cast<std::chrono::milliseconds>(stop_time - start_time).count()
+		<< " ms\n\n";
+
+	start_time = std::chrono::high_resolution_clock::now();
+	std::cout << NewRL23::compress(uncompressed_filename, compressed_filename);
+	stop_time = std::chrono::high_resolution_clock::now();
 	std::cout << "Time Taken: "
 		<< std::chrono::duration_cast<std::chrono::milliseconds>(stop_time - start_time).count()
 		<< " ms\n\n";

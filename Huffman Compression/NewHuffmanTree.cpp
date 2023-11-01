@@ -125,8 +125,6 @@ void NewHuffmanTree::LoadTree(const std::string& str)
 
 		temp_ptr->data = data;
 	}
-
-	//GenerateCodeTable(head_, "");
 }
 
 NewHuffmanTree::NewHuffmanTree() : head_(nullptr) {}

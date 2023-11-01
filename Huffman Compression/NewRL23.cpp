@@ -2,7 +2,7 @@
 
 #include "NewRL23.h"
 
-#include <bitset>
+//#include <bitset>
 //#include <chrono>
 #include <cstring>
 #include <fstream>
@@ -10,29 +10,24 @@
 #include <iostream>
 #include <string>
 
-unsigned long long NewRL23::bin_str_to_original_str_duration_ = 0;
-unsigned long long NewRL23::compressed_str_to_bin_str_duration_ = 0;
-
-char* NewRL23::binary_str_to_compressed_str(char* bin_str, const unsigned long long bin_size)
+char* NewRL23::binary_str_to_compressed_str(char* bin_str, unsigned long long& bin_size)
 {
 	const unsigned long long size = bin_size / 8;
 	const auto new_str = new char[size + 1];
 	new_str[size] = '\0';
-
 	unsigned long long pos = 0;
 
-	for (; pos < size; pos++)
+	for (unsigned long u = 0; pos < size; pos++, u = 0)
 	{
-		char temp_str[9];
-		std::strncpy(temp_str, bin_str + pos * 8, 8);
-		temp_str[8] = '\0';
+		for (unsigned long long j = pos * 8 + 7, pow = 1; j < bin_size && j >= pos * 8; --j, pow *= 2)
+			if (bin_str[j] == '1')
+				u += pow;
 
-		std::bitset<8> bitset(temp_str);
-		const char c = static_cast<char>(bitset.to_ulong());
-		new_str[pos] = c;
+		new_str[pos] = static_cast<char>(u);
 	}
 
 	std::strcpy(bin_str, bin_str + pos * 8);
+	bin_size -= pos * 8;
 
 	return new_str;
 }
@@ -121,19 +116,21 @@ std::string NewRL23::compress(const std::string& input_filename, const std::stri
 		const unsigned long long gcount_size = infile.gcount();
 		read_buffer[gcount_size] = '\0';
 
+		unsigned long long output_str_len = std::strlen(output_buffer);
+
 		for (unsigned long i = 0; i < gcount_size; i++)
 		{
 			auto temp_str = tree.GetCode(read_buffer[i]);
 
-			unsigned long long output_str_len = std::strlen(output_buffer);
-
 			if (output_str_len + temp_str.length() + 1 > output_buffer_size)
 			{
+				const unsigned long long old_output_len = output_str_len / 8;
 				char* output_str = binary_str_to_compressed_str(output_buffer, output_str_len);
-				outfile.write(output_str, output_str_len / 8);
+				outfile.write(output_str, old_output_len);
 				delete[] output_str;
 			}
 
+			output_str_len += temp_str.length();
 			std::strcat(output_buffer, temp_str.c_str());
 		}
 	}
@@ -141,8 +138,9 @@ std::string NewRL23::compress(const std::string& input_filename, const std::stri
 	delete[] read_buffer;
 
 	unsigned long long output_str_len = std::strlen(output_buffer);
+	const unsigned long long old_output_len = output_str_len / 8;
 	char* output_str = binary_str_to_compressed_str(output_buffer, output_str_len);
-	outfile.write(output_str, output_str_len / 8);
+	outfile.write(output_str, old_output_len);
 	delete[] output_str;
 
 	outfile << '\n' << output_buffer;
