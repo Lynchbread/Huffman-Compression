@@ -1,14 +1,11 @@
 #pragma warning(disable : 4996)
 
-#include "HuffmanTree.h"
+#include "NewHuffmanTree.h"
 
-#include <chrono>
 #include <fstream>
 #include <list>
 
-unsigned long long HuffmanTree::GetData_duration_ = 0;
-
-HuffmanTree::Node::Node(const char c, const unsigned long long f)
+NewHuffmanTree::Node::Node(const char c, const unsigned long long f)
 {
 	data = c;
 	frequency = f;
@@ -16,7 +13,7 @@ HuffmanTree::Node::Node(const char c, const unsigned long long f)
 	right = nullptr;
 }
 
-HuffmanTree::Node::Node(Node* l, Node* r)
+NewHuffmanTree::Node::Node(Node* l, Node* r)
 {
 	data = -1;
 	frequency = 0;
@@ -24,7 +21,7 @@ HuffmanTree::Node::Node(Node* l, Node* r)
 	right = r;
 }
 
-HuffmanTree::Node::Node(const Node& other)
+NewHuffmanTree::Node::Node(const Node& other)
 {
 	data = other.data;
 	frequency = other.frequency;
@@ -40,14 +37,14 @@ HuffmanTree::Node::Node(const Node& other)
 		right = nullptr;
 }
 
-HuffmanTree::Node* HuffmanTree::Node::get_node(const char bit) const
+NewHuffmanTree::Node* NewHuffmanTree::Node::get_node(const char bit) const
 {
 	if (bit == '1')
 		return right;
 	return left;
 }
 
-unsigned long long HuffmanTree::Node::get_frequency() const
+unsigned long long NewHuffmanTree::Node::get_frequency() const
 {
 	unsigned long long f = frequency;
 
@@ -60,7 +57,7 @@ unsigned long long HuffmanTree::Node::get_frequency() const
 	return f;
 }
 
-std::string HuffmanTree::traverse_tree(const Node* node)
+std::string NewHuffmanTree::traverse_tree(const Node* node)
 {
 	std::string str;
 
@@ -76,7 +73,7 @@ std::string HuffmanTree::traverse_tree(const Node* node)
 	return str;
 }
 
-void HuffmanTree::GenerateCodeTable(const Node* current_node, const std::string& code)
+void NewHuffmanTree::GenerateCodeTable(const Node* current_node, const std::string& code)
 {
 	if (current_node == nullptr)
 		return;
@@ -92,14 +89,14 @@ void HuffmanTree::GenerateCodeTable(const Node* current_node, const std::string&
 	}
 }
 
-void HuffmanTree::LoadTree(const std::string& str)
+void NewHuffmanTree::LoadTree(const std::string& str)
 {
 	clear();
 
 	head_ = new Node(nullptr, nullptr);
 
-	for (unsigned long long strpos = 0; 
-		strpos != std::string::npos; 
+	for (unsigned long long strpos = 0;
+		strpos != std::string::npos;
 		strpos = str.find(',', strpos))
 	{
 		if (str[strpos] == ',')
@@ -108,7 +105,7 @@ void HuffmanTree::LoadTree(const std::string& str)
 		const char data = str[strpos];
 
 		std::string node_str = str.substr(strpos, str.find(',', strpos + 1) - strpos);
-		
+
 		node_str = node_str.substr(2);
 
 		Node* temp_ptr = head_;
@@ -125,16 +122,16 @@ void HuffmanTree::LoadTree(const std::string& str)
 
 			temp_ptr = temp_ptr->get_node(c);
 		}
-		
+
 		temp_ptr->data = data;
 	}
 
 	//GenerateCodeTable(head_, "");
 }
 
-HuffmanTree::HuffmanTree() : head_(nullptr) {}
+NewHuffmanTree::NewHuffmanTree() : head_(nullptr) {}
 
-HuffmanTree::HuffmanTree(const std::string& input_filename)
+NewHuffmanTree::NewHuffmanTree(const std::string& input_filename)
 {
 	std::ifstream infile(input_filename, std::ios::binary);
 
@@ -168,7 +165,7 @@ HuffmanTree::HuffmanTree(const std::string& input_filename)
 		while (leaf_list.size() > 1)
 		{
 			leaf_list.sort();
-			
+
 			const auto left = new Node(leaf_list.front());
 			leaf_list.pop_front();
 			const auto right = new Node(leaf_list.front());
@@ -183,7 +180,7 @@ HuffmanTree::HuffmanTree(const std::string& input_filename)
 	}
 }
 
-void HuffmanTree::clear(const Node* node)
+void NewHuffmanTree::clear(const Node* node)
 {
 	if (head_ == nullptr)
 		return;
@@ -203,30 +200,25 @@ void HuffmanTree::clear(const Node* node)
 		head_ = nullptr;
 }
 
-char HuffmanTree::GetData(char* bin_str) const
+char NewHuffmanTree::GetData(const char* bin_str, unsigned long long& pos, const unsigned long long size) const
 {
-	const auto start_time = std::chrono::high_resolution_clock::now();
-
 	const Node* temp_ptr = head_;
-	const unsigned long long size = std::strlen(bin_str);
-	unsigned long long pos = 0;
+	const unsigned long long old_pos = pos;
 
 	for (; pos < size && temp_ptr->data == -1; pos++)
 		temp_ptr = temp_ptr->get_node(bin_str[pos]);
 
-	if (temp_ptr->data != -1)
-		std::strcpy(bin_str, bin_str + pos);
-
-	GetData_duration_ += std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
+	if (temp_ptr->data == -1)
+		pos = old_pos;
 
 	return temp_ptr->data;
 }
 
-std::string HuffmanTree::GetCode(const char c) { return code_table_[c]; }
+std::string NewHuffmanTree::GetCode(const char c) { return code_table_[c]; }
 
-bool operator<(const HuffmanTree::Node& l, const HuffmanTree::Node& r) { return l.get_frequency() < r.get_frequency(); }
+bool operator<(const NewHuffmanTree::Node& l, const NewHuffmanTree::Node& r) { return l.get_frequency() < r.get_frequency(); }
 
-std::istream& operator>>(std::istream& is, HuffmanTree& tree)
+std::istream& operator>>(std::istream& is, NewHuffmanTree& tree)
 {
 	std::string line;
 	std::getline(is, line);
@@ -243,11 +235,11 @@ std::istream& operator>>(std::istream& is, HuffmanTree& tree)
 	return is;
 }
 
-std::ostream& operator<<(std::ostream& os, const HuffmanTree& tree)
+std::ostream& operator<<(std::ostream& os, const NewHuffmanTree& tree)
 {
 	const std::string str = tree.traverse_tree(tree.head_);
 	std::string full_string;
-	
+
 	for (const char c : str)
 	{
 		full_string.append(1, c);

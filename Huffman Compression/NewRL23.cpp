@@ -1,21 +1,21 @@
 #pragma warning(disable : 4996)
 
-#include "RL23.h"
+#include "NewRL23.h"
 
 #include <bitset>
-#include <chrono>
+//#include <chrono>
 #include <cstring>
 #include <fstream>
-#include <iomanip>
+//#include <iomanip>
 #include <iostream>
 #include <string>
 
-unsigned long long RL23::bin_str_to_original_str_duration_ = 0;
-unsigned long long RL23::compressed_str_to_bin_str_duration_ = 0;
+unsigned long long NewRL23::bin_str_to_original_str_duration_ = 0;
+unsigned long long NewRL23::compressed_str_to_bin_str_duration_ = 0;
 
-char* RL23::binary_str_to_compressed_str(char* bin_str)
+char* NewRL23::binary_str_to_compressed_str(char* bin_str, const unsigned long long bin_size)
 {
-	const unsigned long long size = std::strlen(bin_str) / 8;
+	const unsigned long long size = bin_size / 8;
 	const auto new_str = new char[size + 1];
 	new_str[size] = '\0';
 
@@ -37,37 +37,46 @@ char* RL23::binary_str_to_compressed_str(char* bin_str)
 	return new_str;
 }
 
-char* RL23::compressed_str_to_bin_str(const char* comp_str, const unsigned long long old_size)
+char* NewRL23::compressed_str_to_bin_str(const char* comp_str, const unsigned long long old_size)
 {
-	const auto start_time = std::chrono::high_resolution_clock::now();
-
 	const unsigned long long new_size = old_size * 8;
 	const auto new_str = new char[new_size + 1];
 	new_str[new_size] = '\0';
 
+	const auto bin = new char[9];
+	bin[8] = '\0';
+
 	for (unsigned long long i = 0; i < old_size; i++)
 	{
-		std::bitset<8> bitset(comp_str[i]);
-		std::strcpy(new_str + i * 8, bitset.to_string().c_str());
+		unsigned char c = comp_str[i];
+
+		for (int j = 7; j >= 0; --j)
+		{
+			if (c % 2)
+				bin[j] = '1';
+			else
+				bin[j] = '0';
+			c /= 2;
+		}
+
+		std::strcpy(new_str + i * 8, bin);
 	}
 
-	compressed_str_to_bin_str_duration_ += std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
+	delete[] bin;
 
 	return new_str;
 }
 
-char* RL23::bin_str_to_original_str(char* bin_str, const HuffmanTree* tree)
+char* NewRL23::bin_str_to_original_str(char* bin_str, const unsigned long long bin_length, const NewHuffmanTree* tree)
 {
-	const auto start_time = std::chrono::high_resolution_clock::now();
+	const auto new_str = new char[bin_length];
 
-	const unsigned long long old_size = std::strlen(bin_str);
-	const auto new_str = new char[old_size];
-
+	unsigned long long pos = 0;
 	char data = 0;
 
-	for (unsigned long long i = 0; i < old_size - 1 && data != -1; i++)
+	for (unsigned long long i = 0; i < bin_length - 1 && data != -1; i++)
 	{
-		data = tree->GetData(bin_str);
+		data = tree->GetData(bin_str, pos, bin_length);
 
 		if (data != -1)
 		{
@@ -76,18 +85,18 @@ char* RL23::bin_str_to_original_str(char* bin_str, const HuffmanTree* tree)
 		}
 	}
 
-	bin_str_to_original_str_duration_ += std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
+	std::strcpy(bin_str, bin_str + pos);
 
 	return new_str;
 }
 
-RL23::RL23() = default;
+NewRL23::NewRL23() = default;
 
-RL23::~RL23() = default;
+NewRL23::~NewRL23() = default;
 
-std::string RL23::compress(const std::string& input_filename, const std::string& output_filename)
+std::string NewRL23::compress(const std::string& input_filename, const std::string& output_filename)
 {
-	HuffmanTree tree(input_filename);
+	NewHuffmanTree tree(input_filename);
 
 	std::cout << "Beginning compression...\n";
 
@@ -116,11 +125,12 @@ std::string RL23::compress(const std::string& input_filename, const std::string&
 		{
 			auto temp_str = tree.GetCode(read_buffer[i]);
 
-			if (std::strlen(output_buffer) + temp_str.length() + 1 > output_buffer_size)
+			unsigned long long output_str_len = std::strlen(output_buffer);
+
+			if (output_str_len + temp_str.length() + 1 > output_buffer_size)
 			{
-				unsigned long long output_str_len = std::strlen(output_buffer) / 8;
-				char* output_str = binary_str_to_compressed_str(output_buffer);
-				outfile.write(output_str, output_str_len);
+				char* output_str = binary_str_to_compressed_str(output_buffer, output_str_len);
+				outfile.write(output_str, output_str_len / 8);
 				delete[] output_str;
 			}
 
@@ -130,9 +140,9 @@ std::string RL23::compress(const std::string& input_filename, const std::string&
 
 	delete[] read_buffer;
 
-	unsigned long long output_str_len = std::strlen(output_buffer) / 8;
-	char* output_str = binary_str_to_compressed_str(output_buffer);
-	outfile.write(output_str, output_str_len);
+	unsigned long long output_str_len = std::strlen(output_buffer);
+	char* output_str = binary_str_to_compressed_str(output_buffer, output_str_len);
+	outfile.write(output_str, output_str_len / 8);
 	delete[] output_str;
 
 	outfile << '\n' << output_buffer;
@@ -145,7 +155,7 @@ std::string RL23::compress(const std::string& input_filename, const std::string&
 	return "Successfully compressed file '" + input_filename + "'.\n";
 }
 
-std::string RL23::decompress(const std::string& input_filename, const std::string& output_filename)
+std::string NewRL23::decompress(const std::string& input_filename, const std::string& output_filename)
 {
 	std::cout << "Beginning decompression...\n";
 
@@ -154,7 +164,7 @@ std::string RL23::decompress(const std::string& input_filename, const std::strin
 	if (!infile.is_open())
 		return "ERROR: Failed to open file '" + input_filename + "'.\n";
 
-	HuffmanTree tree;
+	NewHuffmanTree tree;
 
 	infile >> tree;
 
@@ -188,21 +198,30 @@ std::string RL23::decompress(const std::string& input_filename, const std::strin
 			final_str++;
 		}
 
+		const unsigned long long binary_leftover_length = std::strlen(binary_buffer);
+
 		const auto bin_str = compressed_str_to_bin_str(read_buffer, gcount_size);
 		std::strcat(binary_buffer, bin_str);
 		delete[] bin_str;
 
-		if (infile.eof() && final_str != nullptr)
-			std::strcat(binary_buffer, final_str);
+		unsigned long long binary_length = gcount_size * 8 + binary_leftover_length;
 
-		const char* original_str = bin_str_to_original_str(binary_buffer, &tree);
+		if (infile.eof() && final_str != nullptr)
+		{
+			binary_length += std::strlen(final_str);
+			std::strcat(binary_buffer, final_str);
+		}
+
+		unsigned long long test = std::strlen(binary_buffer);
+
+		const char* original_str = bin_str_to_original_str(binary_buffer, binary_length, &tree);
 
 		if (std::strlen(output_buffer) + std::strlen(original_str) + 1 > output_buffer_size)
 		{
 			outfile.write(output_buffer, std::strlen(output_buffer));
 			output_buffer[0] = '\0';
 		}
-			
+
 		std::strcat(output_buffer, original_str);
 
 		delete[] original_str;
@@ -216,13 +235,6 @@ std::string RL23::decompress(const std::string& input_filename, const std::strin
 
 	infile.close();
 	outfile.close();
-
-	std::cout << std::setw(30) << std::left << "compressed_str_to_bin_str() = "
-		<< std::setw(10) << std::right << compressed_str_to_bin_str_duration_ << " ns\n";
-	std::cout << std::setw(30) << std::left << "bin_str_to_original_str() = "
-		<< std::setw(10) << std::right << bin_str_to_original_str_duration_ << " ns\n";
-	std::cout << std::setw(30) << std::left << "GetData() = " << std::setw(10)
-		<< std::right << HuffmanTree::GetData_duration_ << " ns\n";
 
 	return "Successfully decompressed file '" + input_filename + "'.\n";
 }
