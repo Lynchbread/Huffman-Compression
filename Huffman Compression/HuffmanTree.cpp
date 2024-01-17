@@ -2,11 +2,8 @@
 
 #include "HuffmanTree.h"
 
-#include <chrono>
 #include <fstream>
 #include <list>
-
-unsigned long long HuffmanTree::GetData_duration_ = 0;
 
 HuffmanTree::Node::Node(const char c, const unsigned long long f)
 {
@@ -98,8 +95,8 @@ void HuffmanTree::LoadTree(const std::string& str)
 
 	head_ = new Node(nullptr, nullptr);
 
-	for (unsigned long long strpos = 0; 
-		strpos != std::string::npos; 
+	for (unsigned long long strpos = 0;
+		strpos != std::string::npos;
 		strpos = str.find(',', strpos))
 	{
 		if (str[strpos] == ',')
@@ -108,7 +105,7 @@ void HuffmanTree::LoadTree(const std::string& str)
 		const char data = str[strpos];
 
 		std::string node_str = str.substr(strpos, str.find(',', strpos + 1) - strpos);
-		
+
 		node_str = node_str.substr(2);
 
 		Node* temp_ptr = head_;
@@ -125,11 +122,9 @@ void HuffmanTree::LoadTree(const std::string& str)
 
 			temp_ptr = temp_ptr->get_node(c);
 		}
-		
+
 		temp_ptr->data = data;
 	}
-
-	//GenerateCodeTable(head_, "");
 }
 
 HuffmanTree::HuffmanTree() : head_(nullptr) {}
@@ -168,7 +163,7 @@ HuffmanTree::HuffmanTree(const std::string& input_filename)
 		while (leaf_list.size() > 1)
 		{
 			leaf_list.sort();
-			
+
 			const auto left = new Node(leaf_list.front());
 			leaf_list.pop_front();
 			const auto right = new Node(leaf_list.front());
@@ -203,21 +198,16 @@ void HuffmanTree::clear(const Node* node)
 		head_ = nullptr;
 }
 
-char HuffmanTree::GetData(char* bin_str) const
+char HuffmanTree::GetData(const char* bin_str, unsigned long long& pos, const unsigned long long size) const
 {
-	const auto start_time = std::chrono::high_resolution_clock::now();
-
 	const Node* temp_ptr = head_;
-	const unsigned long long size = std::strlen(bin_str);
-	unsigned long long pos = 0;
+	const unsigned long long old_pos = pos;
 
 	for (; pos < size && temp_ptr->data == -1; pos++)
 		temp_ptr = temp_ptr->get_node(bin_str[pos]);
 
-	if (temp_ptr->data != -1)
-		std::strcpy(bin_str, bin_str + pos);
-
-	GetData_duration_ += std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
+	if (temp_ptr->data == -1)
+		pos = old_pos;
 
 	return temp_ptr->data;
 }
@@ -247,7 +237,7 @@ std::ostream& operator<<(std::ostream& os, const HuffmanTree& tree)
 {
 	const std::string str = tree.traverse_tree(tree.head_);
 	std::string full_string;
-	
+
 	for (const char c : str)
 	{
 		full_string.append(1, c);

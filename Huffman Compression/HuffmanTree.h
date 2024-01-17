@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iostream>
 #include <string>
 
 class HuffmanTree
@@ -35,13 +34,10 @@ public:
 	HuffmanTree(const std::string&);
 
 	void clear(const Node* = nullptr);
-	char GetData(char*) const;
+	char GetData(const char*, unsigned long long&, unsigned long long) const;
 	std::string GetCode(char);
-
-	static unsigned long long GetData_duration_;
 
 	friend bool operator<(const Node&, const Node&);
 	friend std::istream& operator>>(std::istream& is, HuffmanTree& tree);
 	friend std::ostream& operator<<(std::ostream& os, const HuffmanTree& tree);
 };
-
