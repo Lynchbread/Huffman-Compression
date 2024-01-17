@@ -30,9 +30,9 @@ int main()
 	const auto line = compare_files(uncompressed_filename, decompressed_filename);
 
 	if (line == 0)
-		std::cout << "\nMatch!\n";
+		std::cout << "Match!\n";
 	else
-		std::cout << "\nNot a match. Line: " << line;
+		std::cout << "Not a match. Line: " << line << '\n';
 
 	return 0;
 }

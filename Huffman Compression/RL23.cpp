@@ -8,7 +8,6 @@
 #include <iostream>
 #include <string>
 
-// 1.05% of time spend here
 char* RL23::binary_str_to_compressed_str(char* bin_str, unsigned long long& bin_size)
 {
 	const unsigned long long size = bin_size / 8;
@@ -90,7 +89,7 @@ RL23::~RL23() = default;
 
 std::string RL23::compress(const std::string& input_filename, const std::string& output_filename)
 {
-	HuffmanTree tree(input_filename);	// 0.07% of time
+	HuffmanTree tree(input_filename);
 
 	std::cout << "Beginning compression...\n";
 
@@ -109,6 +108,7 @@ std::string RL23::compress(const std::string& input_filename, const std::string&
 	auto output_buffer = new char[output_buffer_size];
 	output_buffer[0] = '\0';
 
+	
 	while (!infile.eof())
 	{
 		infile.read(read_buffer, read_buffer_size - 1);
@@ -116,21 +116,21 @@ std::string RL23::compress(const std::string& input_filename, const std::string&
 		read_buffer[gcount_size] = '\0';
 
 		unsigned long long output_str_len = std::strlen(output_buffer);
-		
-		for (unsigned long i = 0; i < gcount_size; i++)
+
+		for (unsigned long long i = 0; i < gcount_size; i++)
 		{
 			const auto temp_str = tree.GetCode(read_buffer[i]);
-
-			if (output_str_len + temp_str.length() + 1 > output_buffer_size)
+			
+			if (output_str_len + temp_str->length() + 1 > output_buffer_size)
 			{
 				const unsigned long long old_output_len = output_str_len / 8;
 				char* output_str = binary_str_to_compressed_str(output_buffer, output_str_len);
 				outfile.write(output_str, old_output_len);
 				delete[] output_str;
 			}
-
-			std::strcpy(output_buffer + output_str_len, temp_str.c_str());
-			output_str_len += temp_str.length();
+			
+			std::strcpy(output_buffer + output_str_len, temp_str->c_str());
+			output_str_len += temp_str->length();
 		}
 	}
 

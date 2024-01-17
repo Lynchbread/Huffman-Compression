@@ -212,7 +212,7 @@ char HuffmanTree::GetData(const char* bin_str, unsigned long long& pos, const un
 	return temp_ptr->data;
 }
 
-std::string HuffmanTree::GetCode(const char c) { return code_table_[c]; }
+std::string* HuffmanTree::GetCode(const char c) { return &code_table_[c]; }
 
 bool operator<(const HuffmanTree::Node& l, const HuffmanTree::Node& r) { return l.get_frequency() < r.get_frequency(); }
 
