@@ -3,6 +3,13 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# Generated files
+compressed_*
+decompressed_*
+binary_*
+old_*
+new_*
+
 # User-specific files
 *.rsuser
 *.suo

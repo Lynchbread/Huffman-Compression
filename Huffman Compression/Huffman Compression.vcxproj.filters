@@ -24,12 +24,24 @@
     <ClCompile Include="HuffmanTree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="NewRL23.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NewHuffmanTree.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RL23.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HuffmanTree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NewRL23.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NewHuffmanTree.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

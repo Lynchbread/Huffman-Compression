@@ -129,10 +129,14 @@
   <ItemGroup>
     <ClCompile Include="HuffmanTree.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="NewHuffmanTree.cpp" />
+    <ClCompile Include="NewRL23.cpp" />
     <ClCompile Include="RL23.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HuffmanTree.h" />
+    <ClInclude Include="NewHuffmanTree.h" />
+    <ClInclude Include="NewRL23.h" />
     <ClInclude Include="RL23.h" />
   </ItemGroup>
   <ItemGroup>
