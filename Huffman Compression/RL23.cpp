@@ -2,11 +2,8 @@
 
 #include "RL23.h"
 
-#include <chrono>
 #include <cstring>
-#include <fstream>
 #include <iostream>
-#include <string>
 
 char* RL23::binary_str_to_compressed_str(char* bin_str, unsigned long long& bin_size)
 {
@@ -68,31 +65,54 @@ char* RL23::bin_str_to_original_str(char* bin_str, const unsigned long long bin_
 	return new_str;
 }
 
-RL23::RL23() = default;
-
-RL23::~RL23() = default;
-
-std::string RL23::compress(const std::string& input_filename, const std::string& output_filename)
+std::string RL23::check_conflicts(const std::string& original_filename)
 {
-	HuffmanTree tree(input_filename);
+	std::ifstream file(original_filename, std::ios::binary);
 
-	std::cout << "Beginning compression...\n";
+	const auto pos = original_filename.find_last_of('.');
+	std::string new_filename = original_filename;
 
+	for (int i = 1; file.is_open(); i++)
+	{
+		file.close();
+		new_filename = original_filename;
+
+		if (pos == std::string::npos)
+			new_filename.append(" (" + std::to_string(i) + ")");
+		else
+			new_filename.insert(pos, " (" + std::to_string(i) + ")");
+
+		file.open(new_filename, std::ios::binary);
+	}
+
+	return new_filename;
+}
+
+std::string RL23::compress(const std::string& input_filename, std::string output_filename)
+{
 	std::ifstream infile(input_filename, std::ios::binary);
 
 	if (!infile.is_open())
 		return "ERROR: Failed to open file '" + input_filename + "'.\n";
 
+	if (output_filename.empty())
+		output_filename = input_filename.substr(0, input_filename.find_last_of('.')) + ".r23";
+
+	output_filename = check_conflicts(output_filename);
+
+	HuffmanTree tree(input_filename);
+
+	std::cout << "Beginning compression...\n";
+
 	std::ofstream outfile(output_filename, std::ios::binary);
 
-	outfile << tree << '\n';
+	outfile << input_filename << '\n' << tree << '\n';
 
 	constexpr unsigned long long read_buffer_size = 4096;
 	constexpr unsigned long long output_buffer_size = 65536;
 	const auto read_buffer = new char[read_buffer_size];
-	auto output_buffer = new char[output_buffer_size];
+	const auto output_buffer = new char[output_buffer_size];
 	output_buffer[0] = '\0';
-
 	
 	while (!infile.eof())
 	{
@@ -109,7 +129,7 @@ std::string RL23::compress(const std::string& input_filename, const std::string&
 			if (output_str_len + temp_str->length() + 1 > output_buffer_size)
 			{
 				const unsigned long long old_output_len = output_str_len / 8;
-				char* output_str = binary_str_to_compressed_str(output_buffer, output_str_len);
+				const char* output_str = binary_str_to_compressed_str(output_buffer, output_str_len);
 				outfile.write(output_str, old_output_len);
 				delete[] output_str;
 			}
@@ -123,8 +143,8 @@ std::string RL23::compress(const std::string& input_filename, const std::string&
 
 	unsigned long long output_str_len = std::strlen(output_buffer);
 	const unsigned long long old_output_len = output_str_len / 8;
-	char* output_str = binary_str_to_compressed_str(output_buffer, output_str_len);
-	outfile.write(output_str, old_output_len);
+	const char* output_str = binary_str_to_compressed_str(output_buffer, output_str_len);
+	outfile.write(output_str, static_cast<long long>(old_output_len));
 	delete[] output_str;
 
 	outfile << '\n' << output_buffer;
@@ -137,14 +157,25 @@ std::string RL23::compress(const std::string& input_filename, const std::string&
 	return "Successfully compressed file '" + input_filename + "'.\n";
 }
 
-std::string RL23::decompress(const std::string& input_filename, const std::string& output_filename)
+std::string RL23::decompress(const std::string& input_filename)
 {
-	std::cout << "Beginning decompression...\n";
+	if (input_filename.substr(input_filename.length() - 4, std::string::npos) != ".r23")
+		return "ERROR: '" + input_filename + "' is not a '.r23' file.\n";
 
 	std::ifstream infile(input_filename, std::ios::binary);
 
 	if (!infile.is_open())
 		return "ERROR: Failed to open file '" + input_filename + "'.\n";
+
+	std::string output_filename;
+	std::getline(infile, output_filename);
+
+	output_filename = check_conflicts(output_filename);
+
+	if (output_filename.empty())
+		return "ERROR: '" + input_filename + "' is missing its file list.\n";
+
+	std::cout << "Beginning decompression...\n";
 
 	HuffmanTree tree;
 
@@ -193,7 +224,7 @@ std::string RL23::decompress(const std::string& input_filename, const std::strin
 		{
 			final_str = read_buffer + gcount_size;
 
-			for (; final_str[0] != '\n'; --final_str, --gcount_size);
+			for (; final_str[0] != '\n'; --final_str, --gcount_size) {}
 
 			final_str[0] = '\0';
 			final_str++;
@@ -218,7 +249,7 @@ std::string RL23::decompress(const std::string& input_filename, const std::strin
 		
 		if (std::strlen(output_buffer) + std::strlen(original_str) + 1 > output_buffer_size)
 		{
-			outfile.write(output_buffer, std::strlen(output_buffer));
+			outfile.write(output_buffer, static_cast<long long>(std::strlen(output_buffer)));
 			output_buffer[0] = '\0';
 		}
 
@@ -231,7 +262,7 @@ std::string RL23::decompress(const std::string& input_filename, const std::strin
 		delete[] code_arr[i];
 	delete[] code_arr;
 
-	outfile.write(output_buffer, std::strlen(output_buffer));
+	outfile.write(output_buffer, static_cast<long long>(std::strlen(output_buffer)));
 
 	delete[] read_buffer;
 	delete[] binary_buffer;

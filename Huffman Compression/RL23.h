@@ -14,10 +14,9 @@ class RL23
 	static char* compressed_str_to_bin_str(const char*, unsigned long long, char**);
 	static char* bin_str_to_original_str(char*, unsigned long long, const HuffmanTree*);
 
-public:
-	RL23();
-	~RL23();
+	static std::string check_conflicts(const std::string&);
 
-	static std::string compress(const std::string&, const std::string&);
-	static std::string decompress(const std::string&, const std::string&);
+public:
+	static std::string compress(const std::string&, std::string);
+	static std::string decompress(const std::string&);
 };

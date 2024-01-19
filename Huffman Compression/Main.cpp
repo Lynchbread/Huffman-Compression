@@ -5,68 +5,56 @@
 
 #include "RL23.h"
 
-unsigned long long compare_files(const std::string&, const std::string&);
-
-int main()
+int main(const int argc, char *argv[])
 {
-	const std::string uncompressed_filename = "uint_data0.dat";
-	const std::string compressed_filename = "compressed_" + uncompressed_filename;
-	const std::string decompressed_filename = "decompressed_" + uncompressed_filename;
+	std::string input_filename;
+	std::string output_filename;
 
-	auto start_time = std::chrono::high_resolution_clock::now();
-	std::cout << RL23::compress(uncompressed_filename, compressed_filename);
-	auto stop_time = std::chrono::high_resolution_clock::now();
-	std::cout << "Time Taken: "
-		<< std::chrono::duration_cast<std::chrono::milliseconds>(stop_time - start_time).count()
-		<< " ms\n\n";
+	const std::string output_flag = "-o";
 
-	start_time = std::chrono::high_resolution_clock::now();
-	std::cout << RL23::decompress(compressed_filename, decompressed_filename);
-	stop_time = std::chrono::high_resolution_clock::now();
-	std::cout << "Time Taken: "
-		<< std::chrono::duration_cast<std::chrono::milliseconds>(stop_time - start_time).count()
-		<< " ms\n\n";
-
-	const auto line = compare_files(uncompressed_filename, decompressed_filename);
-
-	if (line == 0)
-		std::cout << "Match!\n";
-	else
-		std::cout << "Not a match. Line: " << line << '\n';
-
-	return 0;
-}
-
-unsigned long long compare_files(const std::string& filename1, const std::string& filename2)
-{
-	long long line_count = 0;
-
-	std::ifstream infile1(filename1);
-
-	if (!infile1.is_open())
-		return line_count + 1;
-
-	std::ifstream infile2(filename2);
-
-	if (!infile2.is_open())
-		return line_count + 1;
-
-	while (!infile1.eof() && !infile2.eof())
+	switch(argc)
 	{
-		line_count++;
-
-		std::string line1;
-		std::string line2;
-
-		std::getline(infile1, line1);
-		std::getline(infile2, line2);
-
-		if (line1 != line2)
-			return line_count;
+	case 1:
+		std::cout << "ERROR: Missing command arguments";
+		return -1;
+	case 2:
+		input_filename = argv[1];
+		break;
+	case 4:
+		for (int i = 1; i < argc; i++)
+		{
+			if (argv[i] == output_flag)
+			{
+				i++;
+				if (i < argc)
+					output_filename = argv[i];
+				else
+				{
+					std::cout << "ERROR: Missing -o argument";
+					return -1;
+				}
+			}
+			else
+				input_filename = argv[i];
+		}
+		break;
+	default:
+		std::cout << "ERROR: Invalid command arguments";
+		return -1;
 	}
 
-	infile1.close();
-	infile2.close();
+	const auto start_time = std::chrono::high_resolution_clock::now();
+
+	if (input_filename.substr(input_filename.find_last_of('.'), std::string::npos) == ".r23")
+		std::cout << RL23::decompress(input_filename);
+	else
+		std::cout << RL23::compress(input_filename, output_filename);
+
+	const auto stop_time = std::chrono::high_resolution_clock::now();
+
+	std::cout << "Time Taken: "
+		<< std::chrono::duration_cast<std::chrono::milliseconds>(stop_time - start_time).count()
+		<< " ms\n\n";
 
 	return 0;
 }
