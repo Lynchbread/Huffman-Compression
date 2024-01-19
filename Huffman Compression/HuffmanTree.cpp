@@ -204,7 +204,12 @@ char HuffmanTree::GetData(const char* bin_str, unsigned long long& pos, const un
 	const unsigned long long old_pos = pos;
 
 	for (; pos < size && temp_ptr->data == -1; pos++)
-		temp_ptr = temp_ptr->get_node(bin_str[pos]);
+	{
+		if (bin_str[pos] == '1')
+			temp_ptr = temp_ptr->right;
+		else
+			temp_ptr = temp_ptr->left;
+	}
 
 	if (temp_ptr->data == -1)
 		pos = old_pos;

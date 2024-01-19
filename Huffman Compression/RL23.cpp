@@ -30,32 +30,17 @@ char* RL23::binary_str_to_compressed_str(char* bin_str, unsigned long long& bin_
 	return new_str;
 }
 
-char* RL23::compressed_str_to_bin_str(const char* comp_str, const unsigned long long old_size)
+char* RL23::compressed_str_to_bin_str(const char* comp_str, const unsigned long long old_size, char** code_arr)
 {
 	const unsigned long long new_size = old_size * 8;
 	const auto new_str = new char[new_size + 1];
 	new_str[new_size] = '\0';
 
-	const auto bin = new char[9];
-	bin[8] = '\0';
-
 	for (unsigned long long i = 0; i < old_size; i++)
 	{
-		unsigned char c = comp_str[i];
-
-		for (int j = 7; j >= 0; --j)
-		{
-			if (c % 2)
-				bin[j] = '1';
-			else
-				bin[j] = '0';
-			c /= 2;
-		}
-
-		std::strcpy(new_str + i * 8, bin);
+		const unsigned char c = comp_str[i];
+		std::strcpy(new_str + i * 8, code_arr[c]);
 	}
-
-	delete[] bin;
 
 	return new_str;
 }
@@ -179,6 +164,25 @@ std::string RL23::decompress(const std::string& input_filename, const std::strin
 	binary_buffer[0] = '\0';
 	output_buffer[0] = '\0';
 
+	const auto code_arr = new char* [256];
+
+	for (int i = 0; i < 256; i++)
+	{
+		code_arr[i] = new char[9];
+		code_arr[i][8] = '\0';
+
+		int c = i;
+
+		for (int j = 7; j >= 0; --j)
+		{
+			if (c % 2)
+				code_arr[i][j] = '1';
+			else
+				code_arr[i][j] = '0';
+			c /= 2;
+		}
+	}
+
 	while (!infile.eof())
 	{
 		infile.read(read_buffer, read_buffer_size - 1);
@@ -197,7 +201,8 @@ std::string RL23::decompress(const std::string& input_filename, const std::strin
 
 		const unsigned long long binary_leftover_length = std::strlen(binary_buffer);
 
-		const auto bin_str = compressed_str_to_bin_str(read_buffer, gcount_size);
+		const auto bin_str = compressed_str_to_bin_str(read_buffer, gcount_size, code_arr);
+		
 		std::strcat(binary_buffer, bin_str);
 		delete[] bin_str;
 
@@ -209,10 +214,8 @@ std::string RL23::decompress(const std::string& input_filename, const std::strin
 			std::strcat(binary_buffer, final_str);
 		}
 
-		unsigned long long test = std::strlen(binary_buffer);
-
 		const char* original_str = bin_str_to_original_str(binary_buffer, binary_length, &tree);
-
+		
 		if (std::strlen(output_buffer) + std::strlen(original_str) + 1 > output_buffer_size)
 		{
 			outfile.write(output_buffer, std::strlen(output_buffer));
@@ -223,6 +226,10 @@ std::string RL23::decompress(const std::string& input_filename, const std::strin
 
 		delete[] original_str;
 	}
+
+	for (int i = 0; i < 256; i++)
+		delete[] code_arr[i];
+	delete[] code_arr;
 
 	outfile.write(output_buffer, std::strlen(output_buffer));
 
