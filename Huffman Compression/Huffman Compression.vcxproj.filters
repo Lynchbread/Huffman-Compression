@@ -24,24 +24,12 @@
     <ClCompile Include="HuffmanTree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="NewRL23.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NewHuffmanTree.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RL23.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HuffmanTree.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NewRL23.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NewHuffmanTree.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -51,15 +39,5 @@
     <None Include="uint_data2.dat" />
     <None Include="uint_data3.dat" />
     <None Include="uint_data4.dat" />
-    <None Include="decompressed_uint_data0.dat" />
-    <None Include="decompressed_uint_data1.dat" />
-    <None Include="decompressed_uint_data2.dat" />
-    <None Include="decompressed_uint_data3.dat" />
-    <None Include="decompressed_uint_data4.dat" />
-    <None Include="compressed_uint_data0.dat" />
-    <None Include="compressed_uint_data1.dat" />
-    <None Include="compressed_uint_data2.dat" />
-    <None Include="compressed_uint_data3.dat" />
-    <None Include="compressed_uint_data4.dat" />
   </ItemGroup>
 </Project>

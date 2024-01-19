@@ -136,16 +136,6 @@
     <ClInclude Include="RL23.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="compressed_uint_data0.dat" />
-    <None Include="compressed_uint_data1.dat" />
-    <None Include="compressed_uint_data2.dat" />
-    <None Include="compressed_uint_data3.dat" />
-    <None Include="compressed_uint_data4.dat" />
-    <None Include="decompressed_uint_data0.dat" />
-    <None Include="decompressed_uint_data1.dat" />
-    <None Include="decompressed_uint_data2.dat" />
-    <None Include="decompressed_uint_data3.dat" />
-    <None Include="decompressed_uint_data4.dat" />
     <None Include="uint_data0.dat" />
     <None Include="uint_data1.dat" />
     <None Include="uint_data2.dat" />

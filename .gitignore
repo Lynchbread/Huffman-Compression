@@ -9,6 +9,7 @@ decompressed_*
 binary_*
 old_*
 new_*
+*.r23
 
 # User-specific files
 *.rsuser
